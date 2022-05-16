@@ -8,7 +8,6 @@ Maintain the docker compose file for starting indexer services.
 
 ### **Gas fee estimation errors**
 
-
 Indexers may see a message like this in their logs from time to time:
 
 `<transaction> WARN collect and distribute rewards: FAILED : Error: cannot estimate gas; transaction may fail or may require manual gas limit`
@@ -29,10 +28,16 @@ If all has worked you should get `docker-compose version 1.29.2, build 5becea4c`
 
 This is the official installation guide which I encourage you to at least skim before trusting some random on the internet  https://docs.docker.com/compose/install/#install-compose-on-linux-systems
 
+### Change default Postres password
+
+Coming soon!
+
 ### UFW setup guide
 
-Coming soon
+Coming soon!
 
-### Monitoring setup guide
+### Monitoring setup guide (Prometheus and Grafana)
 
-Coming soon
+Coming soon!
+
+If anyone has any questions, corrections or amendments, please do hit me up on Discord - Big Jim | counterpoint
