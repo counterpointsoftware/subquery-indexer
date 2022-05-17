@@ -28,15 +28,68 @@ If all has worked you should get `docker-compose version 1.29.2, build 5becea4c`
 
 This is the official installation guide which I encourage you to at least skim before trusting some random on the internet  https://docs.docker.com/compose/install/#install-compose-on-linux-systems
 
-### Change default Postres password
+### **Change default Postres password**
 
 Coming soon!
 
-### UFW setup guide
+### **UFW setup guide**
 
-Coming soon!
+NOTE: Everyone's setup is different and what worked for me might not be the best solution (or even work) for you. I suggest you consider all options before deciding on which route to take.
 
-### Monitoring setup guide (Prometheus and Grafana)
+Uncomplicated Firewall (UFW) is a popular Linux firewall that ships with Ubuntu.
+
+Docker modifies your server's IP tables directly to setup the networks you configure and ports you expose with the likes of this in a `docker-compose.yml`: 
+```
+ports:
+      - 80:80
+```
+This means that it is able to bypass any UFW configuration you may have setup. The end result is that you may have set a UFW rule to block incoming connections on certain ports but this configuration is then rendered ineffective as the ports remain open to The Internet. Not great if we're taliking about an admin interface or a database engine that would be a target for the multitude of hackers out there!
+
+There are a number of approaches to manage this:
+
+1. Disable the IP tables option in Docker.
+   * Pros
+     * Immediately stops Docker overriding the UFW configuration.
+   * Cons
+     * Requires additional configuration to fix up the way Docker creates networks which allow the containers to talk to each other.
+     * FULL DISCLOSURE: I found option 3 below before I went too far down this rabbit hole so it may not be too bad to configure.
+2. Use `expose` instead of `ports` in the `docker-compose.yml`.
+   * Pros
+     * Nice and neat as the change is only in our docker compose file which is where we are defining the rest of teh behaviour in our stack.
+   * Cons
+     * The `query_` containers that are created to index a project need to talk to other containers in the stack. They do this by running on a specific port which gets allocated when they are created starting at 3000 and incrementing with each project indexed.
+     * That makes expose a little awkward - either suffer the disruption of adding/removing the internal port as projects are added/removed or just expose a bunch (3000 - 3100 for example) up front and hope you don't forget when your 101st project won't index.
+3. Configure UFW with a bunch of additional rules that drop messages to the Docker container ports unless you explicitly open them.
+   * Pros
+     * Allows Docker to maintain it's IP table use (the default behaviour).
+     * Allows UFW to function as it was always intended.
+   * Cons
+     * Difficult to do (but I've made it easier with this guide).
+4. Use your VPS/VDS provider's firewall.
+   * Pros
+     * Probably the easiest solution of all of them. Definitely less effort than the route I've gone so well worth considering.
+   * Cons
+     * Unavailable to me.
+
+Credit for suggesting option 1 first has to go to crypto_new on Discord.
+
+Credit for suggesting options 2, 3 and 4 first has to go to kw1k on Discord (thanks!).
+
+For me, option 3 is the best fit as it allows me to use UFW as it was intended so ports that are not in use by Docker containers can still be controlled with regular UFW rules. It also means that I don't have to manage ports for the `query_` containers which would add to the maintenance overhead further down the line.
+
+It does sound difficult to do though right? Well, it is. But we can stand on the shoulders of giants here as someone has put together a guide on how to do it along with a comprehensive explanation of how it all works. Please do have a read here [To Fix The Docker and UFW Security Flaw Without Disabling Iptables](https://hub.docker.com/r/chaifeng/ufw-docker-agent/).
+
+What I've actually done is written a bash script to configure the firewall from scratch every time I run it. You can find it here: TODO
+
+To walk you through what's happening, it resets any existing configuration, applies some default rules to allow all outgoing connections and then deny all incoming. It then adds the special behaviour suggested by chaifeng above by writing the rules into the `/etc/ufw/after.rules` file which gets run when the firewall is activated. From there we can start adding our exceptions.
+
+Note that the link above is not my actual one, rather a template of mine you can adapt to your own needs. Specifically, you probably want to lock down port 8000 to your own static IP by uncommenting and editing this line and entering your own IP (if you do this, remove or comment the line above that allows everyone access):
+```
+#ufw route allow proto tcp from <your IP address> to any port 8000
+```
+You will need to add rules for any other software in your stack such as monitoring which you will need to access from the outside world.
+
+### **Monitoring setup guide (Prometheus and Grafana)**
 
 Coming soon!
 
