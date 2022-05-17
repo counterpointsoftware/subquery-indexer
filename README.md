@@ -30,7 +30,31 @@ This is the official installation guide which I encourage you to at least skim b
 
 ### **Change default Postres password**
 
-Coming soon!
+Credit to Michael from the SubQuery team here as I've just lifted his exact response from Discord to try and pull all these essential items together in this document. I have tested running these exact steps and they work great. TODO
+
+For `coordinator-service: v0.18.0` you can change postgres password, just make sure the password config for db is same with the one for coordinator service.
+```
+// For postgres db
+POSTGRES_PASSWORD: your_password
+// For coordinator
+command:
+  - --postgres-password: your_password
+```
+However, we don't support to apply the changed password to the existing data ATM, so there has several steps to apply the changes manually:
+```
+// 1. change existing db password manually
+docker exec -i db_container_id psql -U postgres -c "ALTER USER postgres WITH PASSWORD 'your_password'"
+
+// 2. restart docker compose
+docker-compose up -d
+
+// 3. For the running projects, there is a tricky way to force restart the
+// project with new db password (force restart for be supported as a option flag in the future)
+// you can force remove the running query containers, then press `restart project` 
+// with the previous form values in admin app.
+docker stop query_qmyr8xqgaxucxmp query_qmszpq9f4u1gerv
+docker rm query_qmyr8xqgaxucxmp query_qmszpq9f4u1gerv
+```
 
 ### **UFW setup guide**
 
