@@ -79,7 +79,7 @@ For me, option 3 is the best fit as it allows me to use UFW as it was intended s
 
 It does sound difficult to do though right? Well, it is. But we can stand on the shoulders of giants here as someone has put together a guide on how to do it along with a comprehensive explanation of how it all works. Please do have a read here [To Fix The Docker and UFW Security Flaw Without Disabling Iptables](https://hub.docker.com/r/chaifeng/ufw-docker-agent/).
 
-What I've actually done is written a bash script to configure the firewall from scratch every time I run it. You can find it here: TODO
+What I've actually done is written a bash script to configure the firewall from scratch every time I run it. You can find it here: [ufw-setup.sh](https://raw.githubusercontent.com/counterpointsoftware/subquery-indexer/documentation-gotchas-and-faqs/ufw-setup.sh).
 
 To walk you through what's happening, it resets any existing configuration, applies some default rules to allow all outgoing connections and then deny all incoming. It then adds the special behaviour suggested by chaifeng above by writing the rules into the `/etc/ufw/after.rules` file which gets run when the firewall is activated. From there we can start adding our exceptions.
 
