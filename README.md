@@ -43,9 +43,9 @@ Docker modifies your server's IP tables directly to setup the networks you confi
 ports:
       - 80:80
 ```
-This means that it is able to bypass any UFW configuration you may have setup. The end result is that you may have set a UFW rule to block incoming connections on certain ports but this configuration is then rendered ineffective as the ports remain open to The Internet. Not great if we're taliking about an admin interface or a database engine that would be a target for the multitude of hackers out there!
+This means that it is able to bypass any UFW configuration you may have setup. The end result is that you may have set a UFW rule to block incoming connections on certain ports but this configuration is then rendered ineffective as the ports remain open to The Internet. Not great if we're talking about an admin interface or a database engine that would be a target for the multitude of hackers out there!
 
-There are a number of approaches to manage this:
+There are a number of approaches to manage this, here are a few:
 
 1. Disable the IP tables option in Docker.
    * Pros
@@ -55,14 +55,15 @@ There are a number of approaches to manage this:
      * FULL DISCLOSURE: I found option 3 below before I went too far down this rabbit hole so it may not be too bad to configure.
 2. Use `expose` instead of `ports` in the `docker-compose.yml`.
    * Pros
-     * Nice and neat as the change is only in our docker compose file which is where we are defining the rest of teh behaviour in our stack.
+     * Nice and neat as the change is only in our docker compose file which is where we are defining the rest of the behaviour in our stack.
    * Cons
      * The `query_` containers that are created to index a project need to talk to other containers in the stack. They do this by running on a specific port which gets allocated when they are created starting at 3000 and incrementing with each project indexed.
-     * That makes expose a little awkward - either suffer the disruption of adding/removing the internal port as projects are added/removed or just expose a bunch (3000 - 3100 for example) up front and hope you don't forget when your 101st project won't index.
-3. Configure UFW with a bunch of additional rules that drop messages to the Docker container ports unless you explicitly open them.
+     * That makes `expose` a little awkward - either suffer the disruption of adding/removing the internal port as projects are added/removed or just expose a bunch (3000 - 3100 for example) up front and hope you don't forget when your 101st project won't index.
+     * Means that if you pull the latest from the official repository you may overwrite the change in `docker-compose.yml`.
+3. Configure UFW with a bunch of additional rules that drop messages to the Docker container ports unless you explicitly allow them.
    * Pros
-     * Allows Docker to maintain it's IP table use (the default behaviour).
-     * Allows UFW to function as it was always intended.
+     * Allows Docker to maintain its IP table use - the default behaviour.
+     * Allows UFW to function as it was always intended to.
    * Cons
      * Difficult to do (but I've made it easier with this guide).
 4. Use your VPS/VDS provider's firewall.
@@ -90,6 +91,11 @@ Note that the link above is not my actual one, rather a template of mine you can
 #ufw route allow proto tcp from <your IP address> to any port 8000
 ```
 You will need to add rules for any other software in your stack such as monitoring which you will need to access from the outside world.
+
+Finally, you can run it with this command:
+```
+sudo bash ufw-setup.sh
+```
 
 ### **Monitoring setup guide (Prometheus and Grafana)**
 
